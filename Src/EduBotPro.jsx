@@ -337,7 +337,6 @@ Quadratics: factoring → đặt = 0 | completing the square | quadratic formula
 Percentages & ratios: 90% bài word problem — đọc chậm, xác định "X% of what?"
 Statistics: mean/median/mode/range/standard deviation — biết khi nào dùng cái nào
 Desmos hack: plug in answer choices → graph để check nhanh thay vì giải tay
-
 ══════════════════════════════════════════
 📌 GMAT — TRỌNG TÂM
 ══════════════════════════════════════════
@@ -445,12 +444,18 @@ const renderMd = t => t
 
 async function callClaude(system, messages, max_tokens=1000) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method:"POST", headers:{"Content-Type":"application/json"},
+    method:"POST", headers:{
+      "Content-Type":"application/json",
+      "x-api-key": import.meta.env.VITE_ANTHROPIC_API_KEY,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true"
+    },
     body: JSON.stringify({ model:"claude-sonnet-4-20250514", max_tokens, system, messages }),
   });
   const d = await res.json();
   return d.content?.map(b=>b.text||"").join("") || "";
 }
+// ─── VOICE VISUALIZER ─────────────────────────────────────────────────────────
 function Viz({ active, color }) {
   const [heights, setHeights] = useState(Array(10).fill(4));
   useEffect(() => {
@@ -705,6 +710,8 @@ function ListeningModule({ color }) {
     </div>
   );
 }
+
+// ─── MAIN ─────────────────────────────────────────────────────────────────────
 export default function EduBotPro() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -1009,3 +1016,4 @@ export default function EduBotPro() {
     </div>
   );
 }
+
