@@ -1,372 +1,178 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+                          import { useState, useRef, useEffect, useCallback } from "react";
 
 // ─── PROMPTS ──────────────────────────────────────────────────────────────────
-const BASE_SYSTEM = `Bạn là EduBot Pro — gia sư AI dạy tiếng Anh, IELTS, SAT, GMAT bằng tiếng Việt.
-
-TRIẾT LÝ DẠY: Cô đọng — đầy đủ — thực chiến.
-- Dạy đúng trọng tâm: tập trung vào những gì hay dùng nhất
-- Mỗi giải thích = công thức + ví dụ thật + bẫy hay gặp
-- Luôn kèm 1 câu hỏi kiểm tra ngay sau khi dạy (Active Recall)
-- Khi sai: "Gần rồi! Điểm cần sửa là..." (không nói "Sai")
-- Ưu tiên tiếng Việt, xen tiếng Anh khi cần
+const BASE_SYSTEM = `Bạn là EduBot Pro — gia sư AI dạy tiếng Anh, IELTS, SAT, GMAT bằng tiếng Việt. Triết lý: 80/20 — chỉ dạy 20% kiến thức cover 80% tình huống thực tế. Không lan man, không dạy thứ ít dùng. Mỗi giải thích = ngắn gọn + ví dụ thật + áp dụng ngay.
 
 ══════════════════════════════════════════
-📌 12 THÌ TIẾNG ANH — ĐẦY ĐỦ & THỰC CHIẾN
+📌 KNOWLEDGE BASE — TIẾNG ANH THỰC CHIẾN
 ══════════════════════════════════════════
 
-━━━ NHÓM HIỆN TẠI (Present) ━━━
+## A. 7 THÌ CỐT LÕI (80/20 — bỏ qua thì hiếm gặp)
 
-【1】PRESENT SIMPLE — Thói quen / Sự thật / Lịch trình cố định
-Công thức: S + V(s/es) | S + don't/doesn't + V | Do/Does + S + V?
-Dùng khi:
-  • Thói quen, hành động lặp lại: "She runs every morning."
-  • Sự thật hiển nhiên: "Water boils at 100°C."
-  • Lịch trình cố định (tàu, máy bay): "The train leaves at 8 AM."
-  • Cảm xúc/trạng thái hiện tại: "I love jazz."
-Signal words: always, usually, often, sometimes, never, every day/week
-★ Bẫy: He work❌ → He works✅ (he/she/it + s/es)
-★ IELTS/SAT: Dùng trong topic câu, chủ đề tổng quát, academic writing
+### 1. Present Simple — thói quen, sự thật
+- Dùng: lịch trình, quy luật tự nhiên, cảm xúc hiện tại
+- "She works at Google." / "I don't like coffee."
+- Bẫy: He work❌ → He works✅ (he/she/it + s)
 
-【2】PRESENT CONTINUOUS — Đang xảy ra / Kế hoạch sắp tới
-Công thức: S + am/is/are + V-ing
-Dùng khi:
-  • Đang xảy ra ngay lúc nói: "I'm studying right now."
-  • Xu hướng tạm thời: "She's working from home this month."
-  • Kế hoạch đã sắp xếp (tương lai gần): "We're flying to Seoul on Friday."
-Signal words: now, at the moment, currently, this week, tonight
-★ Bẫy — STATE VERBS không dùng -ing: know, love, want, need, have (sở hữu), believe, understand, seem, prefer
-  "I'm knowing the answer"❌ → "I know the answer"✅
-★ IELTS Speaking: Mô tả tranh, kể việc đang làm
+### 2. Present Continuous — đang xảy ra / kế hoạch gần
+- "I'm studying now." / "We're meeting tomorrow."
+- Bẫy: I'm knowing❌ — state verbs (know/love/want/have) KHÔNG dùng -ing
 
-【3】PRESENT PERFECT — Quá khứ còn liên quan hiện tại
-Công thức: S + have/has + V3
-Dùng khi:
-  • Kinh nghiệm chưa xác định thời gian: "I have visited Japan." (không nói khi nào)
-  • Hành động vừa xong, ảnh hưởng hiện tại: "I've lost my keys." (và giờ vẫn mất)
-  • Hành động kéo dài đến nay: "She has lived here for 10 years."
-  • Thành tích, tin tức mới: "Scientists have discovered a new planet."
-Signal words: for, since, already, yet, ever, never, just, recently, so far, up to now
-★ Bẫy: have/has + V3 (không dùng V2)
-  "I have went"❌ → "I have gone"✅ | "She has wrote"❌ → "She has written"✅
-★ IELTS/GMAT: CỰC HAY — essay mở đầu, nêu background, kết luận
+### 3. Present Perfect — quá khứ còn liên quan hiện tại
+- "I have lived here for 5 years." / "Have you ever been to Tokyo?"
+- Keywords: for, since, already, yet, ever, never, just
+- IELTS/GMAT HAY dùng thì này — học kỹ
+- Bẫy: I have went❌ → I have gone✅
 
-【4】PRESENT PERFECT CONTINUOUS — Hành động kéo dài đến nay (nhấn mạnh quá trình)
-Công thức: S + have/has + been + V-ing
-Dùng khi:
-  • Nhấn mạnh hành động đang diễn ra liên tục từ quá khứ đến nay: "I've been waiting for 2 hours."
-  • Giải thích nguyên nhân của kết quả hiện tại: "She's tired because she's been working all day."
-Signal words: for, since, all day/morning/week, lately, recently
-★ Khác Present Perfect: PP = kết quả | PPC = quá trình
-  "I've read 3 books" (xong rồi) vs "I've been reading" (vẫn đang đọc)
-★ IELTS Band 7+: Dùng để nâng điểm Grammar range
+### 4. Past Simple — sự kiện hoàn chỉnh trong quá khứ
+- "She graduated in 2020." / "Did you finish the report?"
+- Dùng khi có time marker: yesterday, last week, in 2019, ago
 
-━━━ NHÓM QUÁ KHỨ (Past) ━━━
+### 5. Past Continuous — đang xảy ra thì bị gián đoạn
+- "I was sleeping when she called."
+- Dùng nhiều trong storytelling, IELTS Writing Task 1 (graphs với trends)
 
-【5】PAST SIMPLE — Sự kiện hoàn chỉnh trong quá khứ ⭐ QUAN TRỌNG NHẤT
-Công thức: S + V2 | S + didn't + V | Did + S + V?
-Dùng khi:
-  • Hành động xảy ra và kết thúc trong quá khứ (biết thời điểm): "She graduated in 2020."
-  • Chuỗi sự kiện trong quá khứ: "I woke up, brushed my teeth, and left."
-  • Trạng thái trong quá khứ: "He was really shy as a kid."
-Signal words: yesterday, last week/year, in 2019, ago, when + past event
-★ Bẫy: Phải nhớ V2 bất quy tắc: go→went, buy→bought, know→knew, take→took, write→wrote
-★ IELTS Speaking Part 2: Kể chuyện quá khứ — dùng thì này chủ yếu
+### 6. Future: will vs going to vs Present Continuous
+- will = quyết định tức thời, dự đoán không chắc: "I'll help you."
+- going to = kế hoạch đã có / dự đoán có bằng chứng: "It's going to rain." / "I'm going to study abroad."
+- Present Continuous = lịch đã sắp xếp: "I'm flying to London on Monday."
 
-【6】PAST CONTINUOUS — Đang xảy ra thì bị gián đoạn / Bối cảnh câu chuyện
-Công thức: S + was/were + V-ing
-Dùng khi:
-  • Hành động đang xảy ra bị gián đoạn: "I was sleeping when the phone rang."
-  • Hai hành động song song trong quá khứ: "While she was cooking, he was cleaning."
-  • Bối cảnh/không khí cho câu chuyện: "It was raining. People were rushing home."
-Signal words: while, when, at that time, at 7 PM yesterday
-★ Bẫy: when = hành động ngắn (Past Simple) | while = hành động dài (Past Continuous)
-  "When she called, I was eating." ✅
-★ IELTS Writing Task 1 (graphs): Mô tả xu hướng trong giai đoạn nhất định
+### 7. Conditionals — CỰC QUAN TRỌNG cho IELTS/SAT/GMAT
+- Type 1 (có thể xảy ra): "If I study hard, I will pass."
+- Type 2 (giả định): "If I were rich, I would travel." — NOTE: were (không phải was) cho mọi chủ ngữ
+- Type 3 (nuối tiếc quá khứ): "If I had studied, I would have passed."
+- Mixed: "If I had studied harder, I would be a doctor now."
 
-【7】PAST PERFECT — Hành động xảy ra TRƯỚC một hành động khác trong quá khứ
-Công thức: S + had + V3
-Dùng khi:
-  • Hành động xảy ra trước một mốc quá khứ khác: "When I arrived, the meeting had already started."
-  • Giải thích nguyên nhân quá khứ: "She failed because she hadn't studied."
-  • Reported speech (câu tường thuật): "She said she had finished the project."
-Signal words: before, after, by the time, already, when, because
-★ Bẫy: Chỉ dùng khi có 2 hành động quá khứ cần so sánh thứ tự thời gian
-  Nếu đã có "before/after" rõ ràng → Past Simple cũng ok, nhưng Past Perfect = chính xác hơn
-★ GMAT CR/SC: Hay xuất hiện trong câu phức tạp — phải nhận ra đúng thì
+---
 
-【8】PAST PERFECT CONTINUOUS — Quá trình kéo dài TRƯỚC một mốc quá khứ
-Công thức: S + had + been + V-ing
-Dùng khi:
-  • Nhấn mạnh quá trình diễn ra trước một mốc quá khứ: "She had been studying for 3 hours before the exam started."
-  • Giải thích nguyên nhân của kết quả quá khứ: "He was exhausted. He had been running all morning."
-Signal words: for, since, before, when, by the time
-★ Ít dùng nhất trong nhóm Past — nhưng cần nhận biết để không bị nhầm
-★ GMAT RC: Xuất hiện trong văn bản phức tạp
+## B. NGỮ PHÁP TRỌNG TÂM (hay bị sai nhất)
 
-━━━ NHÓM TƯƠNG LAI (Future) ━━━
+### Articles: a / an / the / zero
+- a/an = lần đầu đề cập, không xác định: "I saw a dog."
+- the = đã biết, duy nhất, đề cập lại: "The dog was huge."
+- Zero = tổng quát: "Dogs are loyal." / "I love music."
+- IELTS hay bẫy: the environment✅ / the society❌ (nói chung → society thôi)
 
-【9】FUTURE SIMPLE (will) — Quyết định tức thời / Dự đoán / Lời hứa ⭐
-Công thức: S + will + V | S + won't + V | Will + S + V?
-Dùng khi:
-  • Quyết định tức thời (vừa nghĩ ra): "It's hot. I'll open the window."
-  • Dự đoán không có bằng chứng cụ thể: "I think it will rain tomorrow."
-  • Lời hứa, đề nghị, yêu cầu lịch sự: "I'll help you." / "Will you pass the salt?"
-  • Sự thật tương lai chắc chắn: "She'll be 30 next year."
-★ Bẫy: KHÔNG dùng will cho kế hoạch đã có sẵn → dùng "going to" hoặc Present Continuous
-  "I will meet her at 7 tonight" ❌ (nếu đã book lịch rồi) → "I'm meeting her at 7" ✅
+### Modal verbs (must / should / can / could / might / would)
+- must = bắt buộc hoặc suy luận chắc: "You must wear a seatbelt." / "She must be tired."
+- should = khuyên bảo: "You should exercise more."
+- could/might = có thể (không chắc): "It might rain."
+- would = lịch sự / điều kiện: "Would you help me?"
 
-【10】FUTURE với "going to" — Kế hoạch đã có / Dự đoán có bằng chứng ⭐
-Công thức: S + am/is/are + going to + V
-Dùng khi:
-  • Kế hoạch, dự định đã quyết định: "I'm going to study medicine." (đã quyết rồi)
-  • Dự đoán có bằng chứng ngay trước mắt: "Look at those clouds — it's going to rain."
-★ So sánh 3 dạng Future quan trọng nhất:
-  will = tức thời, không chắc, hứa hẹn
-  going to = đã có kế hoạch, có bằng chứng
-  Present Continuous = lịch đã đặt, đã sắp xếp cụ thể: "I'm flying to Paris on Monday."
+### Passive Voice — IELTS Academic hay dùng
+- Be + V3: "The report was written by the team."
+- Dùng khi: không biết ai làm / muốn nhấn mạnh kết quả / văn phong học thuật
 
-【11】FUTURE CONTINUOUS — Đang xảy ra tại một thời điểm tương lai
-Công thức: S + will + be + V-ing
-Dùng khi:
-  • Hành động đang diễn ra tại một thời điểm xác định trong tương lai: "At 9 PM, I'll be sleeping."
-  • Lịch sự khi hỏi về kế hoạch của người khác: "Will you be using the car tonight?"
-★ Ít gặp trong giao tiếp thường — nhưng xuất hiện trong IELTS Writing formal letters
-★ Signal: at this time tomorrow, at 8 PM next Monday
+### Relative Clauses
+- who (người), which (vật), that (cả hai), where (nơi), whose (sở hữu)
+- Defining: "The book that I read was amazing." (không có dấu phẩy)
+- Non-defining: "My sister, who lives in Hanoi, is a doctor." (có dấu phẩy — GMAT hay test)
 
-【12】FUTURE PERFECT — Hoàn thành TRƯỚC một mốc tương lai
-Công thức: S + will + have + V3
-Dùng khi:
-  • Hành động hoàn thành trước một thời điểm nhất định trong tương lai: "By 2030, scientists will have found a cure."
-  • IELTS Writing Task 2: Dự đoán xu hướng dài hạn — "By the end of this century, cities will have transformed dramatically."
-Signal words: by + time (by 2030, by next year, by the time)
-★ IELTS Band 7+: Dùng thì này trong conclusion → nâng điểm Grammar range đáng kể
+### Gerund vs Infinitive — bẫy cổ điển
+- Gerund (V-ing) sau: enjoy, avoid, finish, suggest, consider, keep, mind, practice
+- Infinitive (to V) sau: want, need, plan, decide, hope, agree, refuse, manage, seem
+- Cả hai (nghĩa khác): remember/forget/stop/try + ing vs to
 
-══════════════════════════════════════════
-📌 NGỮ PHÁP TRỌNG TÂM — CỰC HAY BỊ SAI
-══════════════════════════════════════════
+---
 
-━━━ Articles: a / an / the / Ø (zero) ━━━
-• a/an = lần đầu đề cập, không xác định: "I saw a dog."
-• the = đã biết/xác định/duy nhất/đề cập lại: "The dog was huge."
-• Ø = tổng quát (danh từ số nhiều, uncountable): "Dogs are loyal." / "I love music."
-★ Bẫy IELTS: "the environment"✅ (luôn có the) | "the society"❌ → "society"✅ (tổng quát)
-★ Bẫy: "the life"❌ (tổng quát) → "life is short"✅ | "my life"✅
+## C. TỪ VỰNG — NGUYÊN TẮC 80/20
 
-━━━ Modal Verbs (must/should/can/could/might/would) ━━━
-• must = bắt buộc HOẶC suy luận chắc: "You must wear a seatbelt." / "She must be tired."
-• have to = bắt buộc từ bên ngoài (quy định): "I have to submit by Friday."
-• should = khuyên bảo, kỳ vọng hợp lý: "You should exercise more."
-• could/might = khả năng không chắc: "It might rain." / "She could be right."
-• would = lịch sự / điều kiện: "Would you help me?" / "I would love to."
-★ Bẫy GMAT: must ≠ have to về sắc thái (must = nội tâm, have to = bên ngoài ép buộc)
+### Academic Word List (AWL) — 570 từ cover 10% văn bản học thuật
+Top nhóm hay gặp nhất trong IELTS/SAT/GMAT:
+- **Analyze, assess, assume, concept, context, define, establish, evidence, factor, impact, indicate, involve, issue, major, method, occur, policy, process, require, significant, source, structure, theory**
 
-━━━ Conditionals — CỰC QUAN TRỌNG IELTS/SAT/GMAT ━━━
-• Type 0 — Sự thật: "If water reaches 100°C, it boils." (hiện tại + hiện tại)
-• Type 1 — Có thể xảy ra: "If I study hard, I will pass." (hiện tại + will)
-• Type 2 — Giả định hiện tại: "If I were rich, I would travel the world." (past + would)
-  → Dùng "were" cho MỌI chủ ngữ (không phải "was") trong văn viết chuẩn
-• Type 3 — Nuối tiếc quá khứ: "If I had studied, I would have passed." (past perfect + would have)
-• Mixed — Quá khứ → ảnh hưởng hiện tại: "If I had worked harder, I would be a doctor now."
-★ IELTS Writing Task 2: Type 2 & 3 nâng band lên 7+
-★ GMAT CR: Conditional reasoning = core skill để Strengthen/Weaken argument
+### Collocations quan trọng (học theo cụm, không học từ đơn)
+- make a decision / take action / do research / have an impact
+- reach a conclusion / raise awareness / address an issue / draw a conclusion
+- significantly increase / slightly decrease / gradually improve / sharply decline (IELTS Writing Task 1)
 
-━━━ Passive Voice ━━━
-Công thức: S + be (đúng thì) + V3 (+ by + agent)
-Dùng khi: không biết ai làm / nhấn mạnh kết quả / văn học thuật (IELTS Academic)
-• "The report was written by the team." (Past Simple Passive)
-• "The data has been collected." (Present Perfect Passive — IELTS rất hay dùng)
-• "Mistakes were made." (không cần nói ai làm)
-★ Bẫy: Không phải lúc nào cũng cần "by + agent" — chỉ thêm khi quan trọng
+### Synonyms thay thế "weak words" — IELTS Lexical Resource
+- good → beneficial, advantageous, favorable
+- bad → detrimental, harmful, adverse  
+- show → demonstrate, indicate, illustrate, reveal
+- think → argue, suggest, contend, maintain
+- big → substantial, significant, considerable
+- many → numerous, a significant number of, a wide range of
 
-━━━ Relative Clauses ━━━
-• who = người: "The man who called is my boss."
-• which = vật/ý: "The book which I read was amazing."
-• that = người hoặc vật (defining only): "The car that I bought is red."
-• where = nơi chốn: "The city where I grew up is small."
-• whose = sở hữu: "The student whose essay won is from Hanoi."
-Defining (không dấu phẩy) = thông tin cần thiết để xác định
-Non-defining (có dấu phẩy) = thông tin bổ sung, bỏ vẫn hiểu câu
-• "My sister, who lives in Hanoi, is a doctor." ✅ (non-defining — GMAT hay test "which" vs "that" ở đây)
-★ Bẫy GMAT: Non-defining clause KHÔNG dùng "that" → phải dùng "which/who"
+---
 
-━━━ Gerund vs Infinitive ━━━
-Gerund (V-ing) sau: enjoy, avoid, finish, suggest, consider, keep, mind, practice, admit, deny, risk, miss
-Infinitive (to V) sau: want, need, plan, decide, hope, agree, refuse, manage, seem, fail, offer, promise
-Cả hai — nghĩa KHÁC NHAU:
-• remember + ing = nhớ điều đã làm: "I remember meeting her."
-• remember + to V = nhớ để làm: "Remember to lock the door."
-• stop + ing = dừng hẳn việc đang làm: "He stopped smoking."
-• stop + to V = dừng lại ĐỂ làm việc khác: "He stopped to smoke."
-• try + ing = thử xem sao: "Try adding more salt."
-• try + to V = cố gắng (có thể thất bại): "I tried to lift the box."
-★ SAT Writing & GMAT SC: Parallel structure — động từ cùng hình thức trong một danh sách
-  "She likes reading, writing, and to swim"❌ → "reading, writing, and swimming"✅
+## D. IELTS — CHIẾN THUẬT THỰC CHIẾN
 
-━━━ Subject-Verb Agreement ━━━
-• Danh từ số nhiều bề ngoài nhưng số ít về nghĩa: "The news is good." / "Mathematics is hard."
-• "each/every/either/neither + danh từ" → số ít: "Each student has a laptop."
-• "a number of" → số nhiều | "the number of" → số ít:
-  "A number of students are absent." ✅ | "The number of students is increasing." ✅
-• Neither...nor / Either...or → chia theo chủ ngữ gần động từ hơn
-  "Neither the teacher nor the students were ready." ✅
-★ SAT/GMAT: Hay test những trường hợp đặc biệt này
+### Writing Task 2 (Essay) — cấu trúc chuẩn
+**Intro**: Paraphrase đề + Thesis statement (1 câu nêu quan điểm)
+**Body 1**: Topic sentence → Explain → Example → Link
+**Body 2**: Topic sentence → Explain → Example → Link  
+**Conclusion**: Restate thesis + Summary (KHÔNG đưa ý mới)
+- Lỗi phổ biến: dùng "I think" → thay bằng "It is argued that..." / "Evidence suggests..."
+- Band 7+ cần: cohesive devices (However, Furthermore, In contrast, Consequently)
 
-━━━ Reported Speech (Tường thuật) ━━━
-Direct → Reported: lùi một thì
-• "I am tired" → She said she was tired.
-• "I will help" → He said he would help.
-• "I have finished" → She said she had finished.
-Thay đổi đại từ & trạng từ: here→there, now→then, yesterday→the day before, tomorrow→the next day
-★ IELTS Writing: Paraphrase + cite dẫn chứng dùng reported speech
+### Writing Task 1 (Academic — Graphs)
+Cấu trúc: Overview (xu hướng chung) → Detail group 1 → Detail group 2
+- KHÔNG mô tả từng số một — phân tích xu hướng
+- Phrases: "rose sharply to", "remained relatively stable", "accounted for X%", "peaked at"
+
+### Reading — 3 chiến thuật cốt lõi
+1. **Skim** overview trước (title, heading, first sentence mỗi đoạn) — 2 phút
+2. **Scan** tìm keywords từ câu hỏi trong bài
+3. **T/F/NG**: True = đúng y chang | False = sai | NG = bài không đề cập (hay nhầm False với NG)
+
+### Listening — keyword prediction
+- Đọc câu hỏi TRƯỚC khi nghe — predict loại thông tin cần (số, tên, địa điểm)
+- Paraphrase: bài nói "expensive" → đáp án ghi "high cost"
+- Section 4 = academic monologue, khó nhất — tập trung signal words: "however", "in fact", "moving on to"
+
+### Speaking — công thức PEEL cho Part 2/3
+Point → Explain → Example → Link back
+- Filler tự nhiên: "That's an interesting question...", "From my perspective...", "What I mean is..."
+- Tránh: "very very very", lặp từ, dừng quá lâu
+- Band 7+ cần: idioms dùng đúng chỗ, complex sentences, self-correction tự nhiên
+
+---
+
+## E. SAT — TRỌNG TÂM
+
+### Reading & Writing (Digital SAT)
+- **Rhetorical purpose**: tại sao tác giả dùng câu/đoạn này? → xác định tone (critical/supportive/neutral)
+- **Transitions**: Therefore/However/Furthermore/In contrast — chọn từ đúng logic
+- **Grammar rules hay test**: Subject-verb agreement, pronoun agreement, modifier placement, parallel structure
+- Parallel: "She likes reading, writing, and to swim"❌ → "reading, writing, and swimming"✅
+
+### Math (Digital SAT — dùng Desmos)
+- **Linear equations**: slope-intercept y=mx+b — graph ngay trên Desmos
+- **Systems of equations**: elimination vs substitution — biết khi nào dùng cái nào
+- **Quadratics**: factoring, completing the square, quadratic formula
+- **Percentages & ratios**: 90% bài word problem — đọc chậm, identify what's being asked
+- **Desmos hack**: plug in answer choices vào graph để check nhanh
+
+---
+## F. GMAT — TRỌNG TÂM
+
+### Critical Reasoning (CR) — 5 loại câu hỏi
+1. **Strengthen/Weaken**: tìm assumption ẩn → attack/support nó
+2. **Assumption**: "For the argument to hold, which must be true?"
+3. **Inference**: chỉ kết luận từ thông tin đã cho, không suy thêm
+4. **Bold-face**: xác định role của 2 câu in đậm trong argument
+5. **Evaluate**: tìm thông tin nào sẽ làm rõ argument đúng/sai
+
+### Reading Comprehension (RC)
+- Đọc paragraph đầu + câu đầu mỗi đoạn → nắm structure
+- "Primary purpose" câu hỏi → luôn ở mức tổng quát (không phải chi tiết)
+- Eliminate answers có "extreme language": always/never/only/all
+
+### Quantitative (QR)
+- Data Sufficiency (DS): KHÔNG cần tính ra đáp án — chỉ cần biết CÓ ĐỦ dữ liệu không
+- DS answer choices luôn là A/B/C/D/E cố định — học thuộc
+- Estimation: làm tròn số để tính nhanh, tránh tính tay chính xác
 
 ══════════════════════════════════════════
-📌 TỪ VỰNG — NGUYÊN TẮC 80/20
+📌 PHONG CÁCH DẠY
 ══════════════════════════════════════════
-
-━━━ Academic Word List (AWL) — Top nhóm cốt lõi ━━━
-analyze, assess, assume, concept, context, define, establish, evidence, factor, impact,
-indicate, involve, issue, major, method, occur, policy, process, require, significant,
-source, structure, theory, approach, aspect, consequence, contribute, demonstrate,
-distribute, emphasize, evaluate, illustrate, implement, investigate, maintain, obtain,
-perceive, proportion, role, strategy, vary
-
-━━━ Collocations — Học theo cụm, không học từ đơn ━━━
-Với "make": make a decision, make progress, make an argument, make an impact
-Với "take": take action, take into account, take for granted, take place
-Với "do": do research, do harm, do damage, do well
-Với "have": have an impact, have access to, have implications, have difficulty
-Với "reach/draw": reach a conclusion, draw a conclusion, reach an agreement
-Với "raise/address": raise awareness, raise concerns, address an issue, address the problem
-IELTS Task 1 — Graphs: significantly increase, slightly decrease, gradually improve, 
-  sharply decline, remain relatively stable, peak at, bottom out at, account for X%
-
-━━━ Synonyms — Nâng cấp từ "weak words" ━━━
-good → beneficial, advantageous, favorable, positive
-bad → detrimental, harmful, adverse, negative
-show → demonstrate, indicate, illustrate, reveal, suggest
-think → argue, suggest, contend, maintain, assert, claim
-big/many → substantial, significant, considerable, numerous, a wide range of
-use → utilize, employ, apply, implement
-help → facilitate, enable, support, promote
-change → transform, alter, modify, shift
-problem → challenge, issue, concern, drawback, limitation
-important → crucial, vital, essential, significant, paramount
-
-━━━ Linkers — Cohesion IELTS Band 7+ ━━━
-Thêm ý: Furthermore, Moreover, In addition, Additionally, Not only...but also
-Tương phản: However, Nevertheless, On the other hand, In contrast, Conversely
-Nguyên nhân-kết quả: Therefore, Consequently, As a result, Thus, Hence
-Nhượng bộ: Although, Even though, Despite, In spite of, Admittedly
-Ví dụ: For instance, For example, To illustrate, Such as
-Kết luận: In conclusion, To sum up, Overall, In summary
-
-══════════════════════════════════════════
-📌 IELTS — CHIẾN THUẬT THỰC CHIẾN
-══════════════════════════════════════════
-
-━━━ Writing Task 2 (Essay) — Band 7+ ━━━
-Cấu trúc chuẩn (4 đoạn):
-  INTRO: Paraphrase đề (không copy) + Thesis statement (quan điểm rõ ràng, 1 câu)
-  BODY 1: Topic sentence → Explain (why/how) → Example (cụ thể) → Link
-  BODY 2: Topic sentence → Explain → Example → Link
-  CONCLUSION: Restate thesis (paraphrase lại) + Summary ngắn gọn (KHÔNG thêm ý mới)
-
-4 tiêu chí chấm điểm (mỗi tiêu chí 25%):
-  • Task Achievement: Trả lời đúng và đầy đủ câu hỏi
-  • Coherence & Cohesion: Liên kết ý, paragraph logic
-  • Lexical Resource: Từ vựng phong phú, ít lỗi spelling
-  • Grammatical Range & Accuracy: Đa dạng thì, ít lỗi
-
-Lỗi phổ biến → cách sửa:
-  "I think..." → "It is argued that..." / "Evidence suggests..."
-  Bắt đầu câu bằng "Because" → dùng "Since" / "As" / "Given that"
-  Kết luận có ý mới → chỉ restate + summarize
-  Đoạn văn quá dài không có topic sentence → Luôn mở đầu = chủ đề rõ ràng
-
-━━━ Writing Task 1 (Academic Graphs) ━━━
-Cấu trúc: Overview (xu hướng chung, không số liệu) → Detail Group 1 → Detail Group 2
-★ Overview = quan trọng nhất — thiếu overview mất band đáng kể
-★ KHÔNG mô tả từng số — phân tích xu hướng, so sánh
-Phrases hay dùng: "rose sharply to", "remained relatively stable at around", 
-  "accounted for X% of", "peaked at", "saw a dramatic increase in", "underwent a gradual decline"
-
-━━━ Reading — 3 Chiến thuật cốt lõi ━━━
-1. SKIM overview trước (title, heading, câu đầu mỗi đoạn) — 2 phút
-2. SCAN tìm keywords từ câu hỏi (paraphrase — bài dùng "expensive", câu hỏi dùng "costly")
-3. T/F/NG:
-   True = thông tin KHỚP hoàn toàn với bài
-   False = thông tin TRÁI NGƯỢC với bài
-   Not Given = bài KHÔNG đề cập (không phải "có vẻ sai" — phải tìm mà không thấy)
-★ Bẫy lớn nhất: nhầm "Not Given" thành "False" vì "cảm thấy không đúng"
-
-━━━ Listening — Chiến thuật thực chiến ━━━
-• Đọc câu hỏi TRƯỚC khi nghe — predict loại thông tin (số, tên, địa điểm, lý do)
-• Paraphrase: bài nói "expensive" → đáp án viết "costly/high-priced" — nhận ra synonym
-• Section 4 (academic monologue) = khó nhất — bám signal words: "however", "in fact", "importantly", "moving on to", "another key point"
-• Viết đúng spelling — sai spelling = mất điểm dù hiểu đúng
-
-━━━ Speaking — Công thức PEEL + Band 7+ ━━━
-Part 1: Câu trả lời 2-3 câu, có lý do và ví dụ
-Part 2: PEEL — Point → Explain → Example → Link back (nói 1.5-2 phút)
-Part 3: Câu trả lời dài hơn, thảo luận 2 chiều, dùng conditional & complex sentences
-
-Nâng band:
-  Fillers tự nhiên: "That's an interesting point...", "From my perspective...", "What I mean is..."
-  Self-correction: "...well, actually, what I wanted to say was..."
-  Idioms đúng chỗ: "a double-edged sword", "a blessing in disguise", "see eye to eye"
-★ Tránh: lặp từ, dừng quá lâu, trả lời quá ngắn, dùng "very very very"
-
-══════════════════════════════════════════
-📌 SAT — TRỌNG TÂM
-══════════════════════════════════════════
-
-━━━ Reading & Writing (Digital SAT) ━━━
-Rhetorical purpose: Tại sao tác giả dùng câu/đoạn này? → Xác định tone (critical/supportive/neutral/ironic)
-Transitions: chọn từ đúng logic — Therefore (kết quả), However (tương phản), Furthermore (bổ sung), For instance (ví dụ)
-Grammar rules hay test:
-  • Subject-verb agreement (đặc biệt với mệnh đề xen giữa)
-  • Pronoun agreement: "Everyone should bring their notebook" ✅ (singular they ok)
-  • Modifier placement: modifier phải đứng gần nhất với từ nó bổ nghĩa
-  • Parallel structure: danh sách phải cùng hình thức
-  • Comma splice: không nối 2 mệnh đề độc lập bằng dấu phẩy đơn thuần
-
-━━━ Math (Digital SAT — dùng Desmos) ━━━
-Linear equations: y = mx + b — graph ngay trên Desmos để check
-Systems of equations: elimination (khi hệ số giống nhau) vs substitution (khi 1 ẩn đã đứng một mình)
-Quadratics: factoring → đặt = 0 | completing the square | quadratic formula
-Percentages & ratios: 90% bài word problem — đọc chậm, xác định "X% of what?"
-Statistics: mean/median/mode/range/standard deviation — biết khi nào dùng cái nào
-Desmos hack: plug in answer choices → graph để check nhanh thay vì giải tay
-══════════════════════════════════════════
-📌 GMAT — TRỌNG TÂM
-══════════════════════════════════════════
-
-━━━ Critical Reasoning (CR) ━━━
-Cấu trúc argument: Premise(s) → [Assumption ẩn] → Conclusion
-5 loại câu hỏi:
-  1. Strengthen: Tìm assumption → hỗ trợ nó
-  2. Weaken: Tìm assumption → tấn công nó
-  3. Assumption: "For the argument to hold, which must be true?"
-  4. Inference: Chỉ kết luận từ thông tin ĐÃ CÓ, không suy thêm
-  5. Bold-face: Xác định vai trò của 2 câu in đậm trong argument
-Bẫy: Eliminate answers có extreme language: always/never/only/all/impossible
-
-━━━ Sentence Correction (SC) ━━━
-5 lỗi hay gặp nhất: Subject-verb agreement | Pronoun reference | Modifier | Parallel structure | Verb tense
-Quy trình: Đọc → Xác định lỗi → Eliminate → Chọn câu ngắn nhất không có lỗi
-★ Không phải câu dài = đúng, không phải câu ngắn = sai — phải đúng nghĩa + đúng ngữ pháp
-
-━━━ Reading Comprehension (RC) ━━━
-Đọc paragraph đầu + câu đầu mỗi đoạn → nắm structure (2-3 phút)
-"Primary purpose" → luôn ở mức tổng quát (không phải chi tiết nhỏ)
-"It can be inferred" → phải có bằng chứng trong bài, không suy đoán
-Eliminate: extreme language, scope quá rộng/hẹp so với passage
-
-━━━ Quantitative (QR) ━━━
-Data Sufficiency (DS): KHÔNG cần tính ra đáp án — chỉ cần biết CÓ ĐỦ dữ liệu không
-DS answer choices: A (stmt 1 đủ) | B (stmt 2 đủ) | C (cần cả hai) | D (cả hai đều đủ riêng lẻ) | E (cả hai vẫn không đủ)
-Estimation: Làm tròn số để tính nhanh — tránh tính tay chính xác
-★ Bẫy DS: đừng bị "có vẻ đủ" — test với số cụ thể (thử số âm, số 0, phân số)`;
+- Trả lời ngắn gọn, dùng ví dụ thật ngay
+- So sánh với tiếng Việt khi giải thích ngữ pháp
+- Luôn kèm "bẫy hay gặp" khi dạy rule
+- Sau mỗi giải thích: đặt 1 câu hỏi kiểm tra ngay (Active Recall)
+- Khi sai: "Gần rồi! Điểm cần sửa là..." — không nói "Sai"
+- Ưu tiên tiếng Việt, xen tiếng Anh khi cần thiết`;
 
 const SPEAKING_SYSTEM = `You are EduBot Pro's IELTS Speaking Coach — a friendly, encouraging British examiner.
 RULES: English only. Max 60 words per reply. After student speaks: [FEEDBACK: one tip] then [QUESTION: next question]. Natural examiner phrases. Progress Part 1→2→3 naturally.`;
@@ -400,13 +206,12 @@ Be encouraging. Format clearly.`;
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 const QUICK_STARTS = [
-  { icon: "🎯", label: "Đánh giá trình độ", msg: "Tôi muốn được đánh giá trình độ tiếng Anh hiện tại" },
-  { icon: "📚", label: "Lộ trình IELTS", msg: "Tạo cho tôi lộ trình học IELTS từ đầu đến band 7.0" },
-  { icon: "📖", label: "12 thì tiếng Anh", msg: "Dạy tôi 12 thì tiếng Anh theo thứ tự từ quan trọng nhất" },
-  { icon: "✍️", label: "Writing Task 2", msg: "Hướng dẫn tôi viết IELTS Writing Task 2 đạt band 7+" },
-  { icon: "🔢", label: "SAT Math", msg: "Dạy tôi chiến thuật SAT Math từ cơ bản" },
-  { icon: "🧠", label: "GMAT CR", msg: "Giải thích cách làm Critical Reasoning trong GMAT" },
-  { icon: "🎓", label: "Bằng QT Online", msg: "Giới thiệu các khóa học quốc tế online có cấp chứng chỉ" },
+  { icon: "🎯", label: "Test trình độ ngay", msg: "Hãy kiểm tra trình độ tiếng Anh của tôi bằng 5 câu hỏi nhanh bao gồm ngữ pháp và từ vựng, sau đó nhận xét điểm mạnh yếu" },
+  { icon: "⏰", label: "7 thì quan trọng nhất", msg: "Dạy tôi 7 thì tiếng Anh quan trọng nhất theo kiểu 80/20 — ngắn gọn, ví dụ thực tế, kèm bẫy hay gặp" },
+  { icon: "✍️", label: "IELTS Writing Task 2", msg: "Dạy tôi cấu trúc IELTS Writing Task 2 chuẩn band 7, kèm ví dụ và lỗi hay gặp nhất" },
+  { icon: "📖", label: "True/False/NG trick", msg: "Giải thích chiến thuật làm True/False/Not Given trong IELTS Reading kèm ví dụ thực hành ngay" },
+  { icon: "🔢", label: "SAT Math + Desmos", msg: "Chỉ tôi cách dùng Desmos trong SAT Math để giải nhanh hơn, kèm các dạng bài hay gặp nhất" },
+  { icon: "🧠", label: "GMAT Critical Reasoning", msg: "Dạy tôi 5 loại câu hỏi Critical Reasoning trong GMAT và cách approach từng loại ngắn gọn" },
 ];
 
 const MODULE_TABS = [
@@ -444,18 +249,13 @@ const renderMd = t => t
 
 async function callClaude(system, messages, max_tokens=1000) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method:"POST", headers:{
-      "Content-Type":"application/json",
-      "x-api-key": import.meta.env.VITE_ANTHROPIC_API_KEY,
-      "anthropic-version": "2023-06-01",
-      "anthropic-dangerous-direct-browser-access": "true"
-    },
+    method:"POST", headers:{"Content-Type":"application/json"},
     body: JSON.stringify({ model:"claude-sonnet-4-20250514", max_tokens, system, messages }),
   });
   const d = await res.json();
   return d.content?.map(b=>b.text||"").join("") || "";
 }
-// ─── VOICE VISUALIZER ─────────────────────────────────────────────────────────
+VOICE VISUALIZER ─────────────────────────────────────────────────────────
 function Viz({ active, color }) {
   const [heights, setHeights] = useState(Array(10).fill(4));
   useEffect(() => {
@@ -474,7 +274,7 @@ function Viz({ active, color }) {
 
 // ─── LISTENING MODULE ─────────────────────────────────────────────────────────
 function ListeningModule({ color }) {
-  const [phase, setPhase] = useState("pick");
+  const [phase, setPhase] = useState("pick"); // pick | loading | ready | playing | answering | result
   const [sectionType, setSectionType] = useState("s1");
   const [passage, setPassage] = useState(null);
   const [answers, setAnswers] = useState({});
@@ -553,9 +353,7 @@ function ListeningModule({ color }) {
     clearInterval(progRef.current);
     setIsPlaying(false); setIsPaused(false);
     setHasPlayed(true); setPhase("answering");
-  };
-
-  const submitAnswers = async () => {
+  };const submitAnswers = async () => {
     setEvalLoading(true);
     const qa = passage.questions.map((q,i)=>
       `Q${i+1}: ${q.question}\nStudent answer: ${answers[i]||"(no answer)"}\nCorrect: ${q.answer}`
@@ -569,6 +367,7 @@ function ListeningModule({ color }) {
 
   const reset = () => { synthRef.current.cancel(); clearInterval(progRef.current); setPhase("pick"); setPassage(null); setAnswers({}); setResult(""); setProgress(0); };
 
+  // PICK PHASE
   if (phase === "pick") return (
     <div style={{padding:"20px 0"}}>
       <div style={{textAlign:"center",marginBottom:24}}>
@@ -611,8 +410,10 @@ function ListeningModule({ color }) {
     </div>
   );
 
+  // READY / PLAYING / ANSWERING / RESULT
   return (
     <div style={{padding:"8px 0"}}>
+      {/* Header */}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16}}>
         <div>
           <div style={{color:color,fontSize:11,fontWeight:700,letterSpacing:".5px",marginBottom:3}}>{passage?.type} · {passage?.context}</div>
@@ -621,6 +422,7 @@ function ListeningModule({ color }) {
         <button onClick={reset} style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",color:"#888",padding:"5px 10px",borderRadius:8,cursor:"pointer",fontSize:12}}>↺ Bài mới</button>
       </div>
 
+      {/* Player */}
       {(phase==="ready"||phase==="playing"||phase==="answering") && (
         <div style={{background:"rgba(59,130,246,0.08)",border:"1px solid rgba(59,130,246,0.2)",borderRadius:14,padding:"16px",marginBottom:16}}>
           <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
@@ -634,7 +436,7 @@ function ListeningModule({ color }) {
           </div>
           <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
             {!isPlaying && !isPaused && !hasPlayed && (
-              <button onClick={playAudio} style={{background:`linear-gradient(135deg,${color},#3B82F6)`,border:"none",color:"#fff",padding:"9px 18px",borderRadius:10,cursor:"pointer",fontWeight:700,fontSize:13}}>
+              <button onClick={playAudio} style={{background:`linear-gradient(135deg,${color},#3B82F6)`,border:"none",color:"#fff",padding:"9px 18px",borderRadius:10,cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center",gap:6}}>
                 ▶ Nghe bài
               </button>
             )}
@@ -667,7 +469,7 @@ function ListeningModule({ color }) {
           )}
         </div>
       )}
-
+            {/* Questions */}
       {(phase==="answering"||phase==="result") && (
         <div style={{marginBottom:16}}>
           <div style={{color:"#fff",fontWeight:600,fontSize:14,marginBottom:12}}>📝 Câu hỏi ({passage?.questions?.length} câu)</div>
@@ -701,6 +503,7 @@ function ListeningModule({ color }) {
         </div>
       )}
 
+      {/* Result */}
       {phase==="result" && result && (
         <div style={{background:"rgba(0,200,150,0.06)",border:"1px solid rgba(0,200,150,0.2)",borderRadius:14,padding:"16px"}}>
           <div style={{color:"#00C896",fontWeight:700,fontSize:13,marginBottom:10}}>📊 Kết quả & Phân tích</div>
@@ -720,6 +523,7 @@ export default function EduBotPro() {
   const [showWelcome, setShowWelcome] = useState(true);
   const [conversationHistory, setConversationHistory] = useState([]);
 
+  // Speaking
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [transcript, setTranscript] = useState("");
@@ -807,7 +611,6 @@ export default function EduBotPro() {
   const exitMode = () => { stopSpeaking(); stopListening(); setActiveModule("ielts"); setMessages([]); setConversationHistory([]); setShowWelcome(true); };
   const resetChat = () => { stopSpeaking(); stopListening(); setMessages([]); setConversationHistory([]); setShowWelcome(true); setInput(""); };
   const handleKey = e => { if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();} };
-
   return (
     <div style={{minHeight:"100vh",background:"#0A0A0F",fontFamily:"'DM Sans',sans-serif",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
       <div style={{position:"fixed",inset:0,zIndex:0,backgroundImage:`radial-gradient(circle at 20% 20%,${activeColor}18 0%,transparent 50%),radial-gradient(circle at 80% 80%,#7C3AED18 0%,transparent 50%),linear-gradient(rgba(255,255,255,0.015) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.015) 1px,transparent 1px)`,backgroundSize:"100% 100%,100% 100%,40px 40px,40px 40px"}}/>
@@ -840,14 +643,16 @@ export default function EduBotPro() {
             <div style={{width:32,height:32,borderRadius:8,background:`linear-gradient(135deg,${activeColor},#7C3AED)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0}}>🧠</div>
             <div style={{minWidth:0}}>
               <div style={{fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,fontSize:14,color:"#fff",whiteSpace:"nowrap"}}>EduBot <span style={{color:activeColor}}>Pro</span></div>
-              <div style={{fontSize:9,color:"#444",letterSpacing:".4px",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{isSpeakingMode?"🎙️ Speaking Examiner":"12 Thì · IELTS · SAT · GMAT"}</div>
+              <div style={{fontSize:9,color:"#444",letterSpacing:".4px",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{isSpeakingMode?"🎙️ Speaking Examiner":`IELTS · SAT · GMAT · Bằng QT`}</div>
             </div>
           </div>
 
+          {/* TABS */}
           <div style={{display:"flex",gap:2,background:"rgba(255,255,255,0.04)",borderRadius:9,padding:"2px",flexShrink:0}}>
             {MODULE_TABS.map(tab=>(
               <button key={tab.id} className="tbtn" onClick={()=>{if(tab.id!=="speaking"){setActiveModule(tab.id);if(isSpeakingMode)exitMode();}else enterSpeakingMode();}} style={{padding:"5px 7px",borderRadius:6,border:"none",cursor:"pointer",background:activeModule===tab.id?tab.color+"22":"transparent",color:activeModule===tab.id?tab.color:"#555",fontSize:11,fontWeight:600,display:"flex",alignItems:"center",gap:3,opacity:activeModule===tab.id?1:0.7}}>
                 <span>{tab.icon}</span>
+                <span style={{display:"none"}} className="tab-label">{tab.label}</span>
               </button>
             ))}
           </div>
@@ -858,6 +663,7 @@ export default function EduBotPro() {
             <button onClick={resetChat} style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.07)",color:"#555",padding:"5px 9px",borderRadius:8,cursor:"pointer",fontSize:12,flexShrink:0}}>↺</button>
           )}
         </div>
+        {/* Tab labels row */}
         <div style={{maxWidth:840,margin:"0 auto",display:"flex",gap:2,paddingBottom:4,overflowX:"auto"}}>
           {MODULE_TABS.map(tab=>(
             <button key={tab.id+"l"} className="tbtn" onClick={()=>{if(tab.id!=="speaking"){setActiveModule(tab.id);if(isSpeakingMode)exitMode();}else enterSpeakingMode();}} style={{padding:"2px 8px",borderRadius:5,border:"none",cursor:"pointer",background:"transparent",color:activeModule===tab.id?tab.color:"#444",fontSize:10,fontWeight:600,whiteSpace:"nowrap",letterSpacing:".3px"}}>
@@ -867,6 +673,7 @@ export default function EduBotPro() {
         </div>
       </header>
 
+      {/* Speaking banner */}
       {isSpeakingMode && (
         <div style={{background:"linear-gradient(90deg,#F59E0B12,#FF6B3512)",borderBottom:"1px solid rgba(245,158,11,0.15)",padding:"6px 16px"}}>
           <div style={{maxWidth:840,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:6}}>
@@ -883,27 +690,30 @@ export default function EduBotPro() {
       <div style={{flex:1,overflowY:"auto",position:"relative",zIndex:1}}>
         <div style={{maxWidth:840,margin:"0 auto",padding:"16px 14px 170px"}}>
 
+          {/* Listening Module */}
           {isListeningModule && <ListeningModule color={activeColor}/>}
 
+          {/* Welcome */}
           {showWelcome && !isListeningModule && (
             <div style={{animation:"su .5s cubic-bezier(.16,1,.3,1) both"}}>
               <div style={{textAlign:"center",padding:"30px 12px 20px"}}>
                 <div style={{display:"inline-flex",alignItems:"center",gap:7,background:`${activeColor}15`,border:`1px solid ${activeColor}28`,borderRadius:100,padding:"4px 12px",marginBottom:18,fontSize:10,color:activeColor,fontWeight:700}}>
-                  ✦ FULL 12 THÌ · IELTS · SAT · GMAT · THỰC CHIẾN
+                  ✦ AI TUTOR — PHƯƠNG PHÁP KHOA HỌC NÃO BỘ
                 </div>
                 <h1 style={{fontFamily:"'Space Grotesk',sans-serif",fontSize:"clamp(22px,5vw,38px)",fontWeight:700,color:"#fff",margin:"0 0 8px",lineHeight:1.15,letterSpacing:"-1px"}}>
                   Học thật, không học vẹt.<br/><span style={{color:activeColor}}>Kết quả thật.</span>
                 </h1>
                 <p style={{color:"#555",fontSize:13,maxWidth:440,margin:"0 auto 22px",lineHeight:1.7}}>
-                  12 thì tiếng Anh đầy đủ · Ngữ pháp thực chiến · IELTS 4 kỹ năng · SAT · GMAT
+                  Chatbot + Listening thật + Speaking với AI Examiner — đầy đủ 4 kỹ năng IELTS.
                 </p>
 
+                {/* Feature cards */}
                 <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,marginBottom:20,maxWidth:440,margin:"0 auto 20px"}}>
                   {[
-                    {icon:"📖",title:"12 Thì đầy đủ",desc:"Từ Present Simple đến Future Perfect — có bẫy hay gặp",tab:"ielts",color:"#00C896"},
-                    {icon:"🗣️",title:"Speaking",desc:"Nói chuyện với AI Examiner thật",tab:"speaking",color:"#F59E0B"},
                     {icon:"🎧",title:"Listening",desc:"AI tạo bài → TTS đọc → Chấm điểm",tab:"listening",color:"#3B82F6"},
-                    {icon:"✍️",title:"Writing",desc:"Feedback chi tiết Task 1 & 2 Band 7+",tab:"ielts",color:"#7C3AED"},
+                    {icon:"🗣️",title:"Speaking",desc:"Nói chuyện với AI Examiner thật",tab:"speaking",color:"#F59E0B"},
+                    {icon:"✍️",title:"Writing",desc:"Feedback chi tiết Task 1 & 2",tab:"ielts",color:"#00C896"},
+                    {icon:"📖",title:"Reading",desc:"Chiến thuật skimming, T/F/NG",tab:"ielts",color:"#7C3AED"},
                   ].map(f=>(
                     <button key={f.title} onClick={()=>{if(f.tab==="speaking")enterSpeakingMode();else setActiveModule(f.tab);}} style={{background:"rgba(255,255,255,0.03)",border:`1px solid rgba(255,255,255,0.07)`,borderRadius:12,padding:"12px",cursor:"pointer",textAlign:"left",transition:"all .2s"}} onMouseOver={e=>e.currentTarget.style.borderColor=f.color+"50"} onMouseOut={e=>e.currentTarget.style.borderColor="rgba(255,255,255,0.07)"}>
                       <div style={{fontSize:20,marginBottom:5}}>{f.icon}</div>
@@ -913,8 +723,8 @@ export default function EduBotPro() {
                   ))}
                 </div>
 
-                {voiceSupported && (
-                  <div style={{background:"rgba(245,158,11,0.07)",border:"1px solid rgba(245,158,11,0.18)",borderRadius:14,padding:"14px",marginBottom:16,textAlign:"left",maxWidth:440,margin:"0 auto 16px"}}>
+                {/* Speaking topic picker */}
+                {voiceSupported && (<div style={{background:"rgba(245,158,11,0.07)",border:"1px solid rgba(245,158,11,0.18)",borderRadius:14,padding:"14px",marginBottom:16,textAlign:"left",maxWidth:440,margin:"0 auto 16px"}}>
                     <div style={{fontSize:12,color:"#F59E0B",fontWeight:700,marginBottom:8}}>🗣️ Speaking — chọn chủ đề rồi bắt đầu ngay</div>
                     <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:10}}>
                       {SPEAKING_TOPICS.map(t=>(
@@ -941,7 +751,11 @@ export default function EduBotPro() {
             </div>
           )}
 
-          {!isListeningModule && messages.map(msg=>(
+          {/* Messages */}
+          {!isListeningModule && messages.map((msg, idx)=>{
+            const isLastAssistant = msg.role==="assistant" && idx===messages.length-1;
+            const showReplay = msg.role==="assistant" && isLastAssistant && !!window.speechSynthesis && msg.content?.length > 0;
+            return (
             <div key={msg.id} className="mb" style={{display:"flex",justifyContent:msg.role==="user"?"flex-end":"flex-start",marginBottom:12}}>
               {msg.role==="assistant"&&(
                 <div style={{width:26,height:26,borderRadius:7,flexShrink:0,background:msg.voice?`linear-gradient(135deg,#F59E0B,#FF6B35)`:`linear-gradient(135deg,${activeColor},#7C3AED)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,marginRight:8,marginTop:2}}>
@@ -950,10 +764,14 @@ export default function EduBotPro() {
               )}
               <div style={{maxWidth:"83%",background:msg.role==="user"?`linear-gradient(135deg,${isSpeakingMode?"#F59E0BCC":activeColor+"CC"},${isSpeakingMode?"#FF6B3580":activeColor+"80"})`:"rgba(255,255,255,0.05)",border:msg.role==="user"?"none":"1px solid rgba(255,255,255,0.07)",borderRadius:msg.role==="user"?"15px 15px 3px 15px":"15px 15px 15px 3px",padding:"10px 14px",color:msg.role==="user"?"#fff":"#ddd",fontSize:13,lineHeight:1.75}}>
                 <div className="msg-content" dangerouslySetInnerHTML={{__html:renderMd(msg.content)}}/>
-                {msg.role==="assistant"&&autoSpeak&&<button onClick={()=>speak(msg.content)} style={{marginTop:6,background:"none",border:"none",color:"#444",cursor:"pointer",fontSize:10,padding:0}}>🔊 Nghe lại</button>}
+                {showReplay && (
+                  <button onClick={()=>speak(msg.content)} style={{marginTop:7,background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:6,color:"#666",cursor:"pointer",fontSize:10,padding:"3px 8px",display:"inline-flex",alignItems:"center",gap:4}}>
+                    🔊 Nghe lại
+                  </button>
+                )}
               </div>
             </div>
-          ))}
+          )})}
 
           {!isListeningModule && loading && (
             <div className="mb" style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
@@ -984,7 +802,7 @@ export default function EduBotPro() {
             {isSpeakingMode ? (
               <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:9}}>
                 <div style={{display:"flex",alignItems:"center",gap:16}}>
-                  {isSpeaking&&<div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3}}><Viz active={false} color="#F59E0B"/><span style={{fontSize:9,color:"#F59E0B"}}>Bot đang nói</span></div>}
+                  {isSpeaking&&<div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3}}><Viz active={false} color="#F59E0B" speaking={true}/><span style={{fontSize:9,color:"#F59E0B"}}>Bot đang nói</span></div>}
                   <button className={isListening?"mac":""} onMouseDown={startListening} onMouseUp={stopListening} onTouchStart={e=>{e.preventDefault();startListening();}} onTouchEnd={e=>{e.preventDefault();stopListening();}} style={{width:66,height:66,borderRadius:"50%",border:"none",cursor:"pointer",background:isListening?"linear-gradient(135deg,#FF6B35,#FF3535)":"linear-gradient(135deg,#F59E0B,#FF6B35)",fontSize:26,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:isListening?"none":"0 4px 18px rgba(245,158,11,0.3)"}}>
                     {isListening?"⏹":"🎙️"}
                   </button>
@@ -1001,19 +819,17 @@ export default function EduBotPro() {
                 {voiceSupported&&(
                   <button className={isListening?"mac":""} onMouseDown={startListening} onMouseUp={stopListening} onTouchStart={e=>{e.preventDefault();startListening();}} onTouchEnd={e=>{e.preventDefault();stopListening();}} style={{width:40,height:40,borderRadius:10,border:"none",cursor:"pointer",flexShrink:0,background:isListening?"linear-gradient(135deg,#FF6B35,#FF3535)":"rgba(255,255,255,0.05)",color:isListening?"#fff":"#777",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>
                     {isListening?"⏹":"🎙️"}
-                  </button>
-                )}
+                  </button>)}
                 <div style={{flex:1,background:"rgba(255,255,255,0.05)",border:`1px solid ${input?activeColor+"45":"rgba(255,255,255,0.07)"}`,borderRadius:12,display:"flex",alignItems:"flex-end",gap:7,padding:"8px 12px",transition:"border-color .2s"}}>
-                  <textarea ref={inputRef} value={input} onChange={e=>setInput(e.target.value)} onKeyDown={handleKey} placeholder={`Hỏi về 12 thì, ${MODULE_TABS.find(t=>t.id===activeModule)?.label||"IELTS, SAT, GMAT"}...`} rows={1} style={{flex:1,background:"none",border:"none",outline:"none",color:"#fff",fontSize:13,lineHeight:1.6,maxHeight:110,overflowY:"auto",fontFamily:"inherit"}} onInput={e=>{e.target.style.height="auto";e.target.style.height=Math.min(e.target.scrollHeight,110)+"px";}}/>
+                  <textarea ref={inputRef} value={input} onChange={e=>setInput(e.target.value)} onKeyDown={handleKey} placeholder={`Hỏi về ${MODULE_TABS.find(t=>t.id===activeModule)?.label||"IELTS, SAT, GMAT"}...`} rows={1} style={{flex:1,background:"none",border:"none",outline:"none",color:"#fff",fontSize:13,lineHeight:1.6,maxHeight:110,overflowY:"auto",fontFamily:"inherit"}} onInput={e=>{e.target.style.height="auto";e.target.style.height=Math.min(e.target.scrollHeight,110)+"px";}}/>
                 </div>
                 <button onClick={()=>sendMessage()} disabled={!input.trim()||loading} className="sbtn" style={{width:40,height:40,borderRadius:10,border:"none",cursor:"pointer",flexShrink:0,background:input.trim()&&!loading?`linear-gradient(135deg,${activeColor},#7C3AED)`:"rgba(255,255,255,0.05)",color:input.trim()&&!loading?"#fff":"#444",fontSize:17}}>↑</button>
               </div>
             )}
-            <div style={{textAlign:"center",fontSize:9,color:"#222",marginTop:4}}>EduBot Pro · 12 Thì Tiếng Anh · IELTS · SAT · GMAT · Powered by Claude</div>
+            <div style={{textAlign:"center",fontSize:9,color:"#222",marginTop:4}}>EduBot Pro · IELTS Listening 🎧 Speaking 🗣️ Writing ✍️ · Powered by Claude</div>
           </div>
         </div>
       )}
     </div>
   );
-}
-
+  
