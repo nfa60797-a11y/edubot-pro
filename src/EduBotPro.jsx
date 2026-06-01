@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect, useCallback } from "react";
 
 // ============================================================
@@ -124,7 +125,7 @@ async function callClaude(system, messages, max_tokens=1000) {
   const res = await fetch("/api/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ model:"claude-sonnet-4-20250514", max_tokens, system, messages }),
+    body: JSON.stringify({ model:"claude-sonnet-4-5", max_tokens, system, messages }),
   });
   if (!res.ok) throw new Error(`API error: ${res.status}`);
   const d = await res.json();
@@ -248,7 +249,8 @@ function ListeningModule({ color }) {
       <div style={{color,fontWeight:600}}>{evalLoading?"Đang chấm bài...":"Đang tạo bài nghe..."}</div>
     </div>
   );
-if (phase==="pick") return (
+
+  if (phase==="pick") return (
     <div style={{padding:"16px 0"}}>
       <div style={{textAlign:"center",marginBottom:20}}>
         <div style={{fontSize:28,marginBottom:6}}>🎧</div>
@@ -321,7 +323,7 @@ if (phase==="pick") return (
           {phase==="answering"&&<button onClick={submit} style={{width:"100%",background:`linear-gradient(135deg,${color},#3B82F6)`,border:"none",color:"#fff",padding:"11px",borderRadius:10,cursor:"pointer",fontWeight:700,fontSize:13}}>✅ Nộp & Chấm điểm</button>}
         </div>
       )}
-      {phase==="result"&&result&&(
+{phase==="result"&&result&&(
         <div style={{background:"rgba(0,200,150,0.06)",border:"1px solid rgba(0,200,150,0.2)",borderRadius:12,padding:"14px"}}>
           <div style={{color:"#00C896",fontWeight:700,fontSize:12,marginBottom:8}}>📊 Kết quả</div>
           <div style={{color:"#ccc",fontSize:12,lineHeight:1.8}} dangerouslySetInnerHTML={{__html:renderMd(result)}}/>
@@ -379,7 +381,24 @@ function WritingModule({ color }) {
           </button>
         ))}
       </div>
-     <button onClick={submitWriting} disabled={!essay.trim()||loading} style={{width:"100%",background:essay.trim()&&!loading?`linear-gradient(135deg,${color},#EC4899)`:"rgba(255,255,255,0.06)",border:"none",color:essay.trim()&&!loading?"#fff":"#555",padding:"12px",borderRadius:10,cursor:essay.trim()&&!loading?"pointer":"default",fontWeight:700,fontSize:13,marginBottom:14}}>
+
+      <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:10,padding:"12px",marginBottom:10}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+          <span style={{color:"#888",fontSize:11,fontWeight:600}}>ĐỀ BÀI (tuỳ chọn)</span>
+          <button onClick={randomPrompt} style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",color:"#aaa",padding:"3px 9px",borderRadius:6,cursor:"pointer",fontSize:10}}>🎲 Đề ngẫu nhiên</button>
+        </div>
+        <textarea value={prompt} onChange={e=>setPrompt(e.target.value)} placeholder={`Paste đề bài vào đây hoặc nhấn 🎲 để lấy đề mẫu ${task==="task1"?"Task 1":"Task 2"}...`} style={{width:"100%",background:"transparent",border:"none",outline:"none",color:"#ccc",fontSize:12,lineHeight:1.6,resize:"none",fontFamily:"inherit",minHeight:60,boxSizing:"border-box"}}/>
+      </div>
+
+      <div style={{background:"rgba(255,255,255,0.03)",border:`1px solid ${essay.length>0?color+"40":"rgba(255,255,255,0.07)"}`,borderRadius:10,padding:"12px",marginBottom:10,transition:"border-color .2s"}}>
+        <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+          <span style={{color:"#888",fontSize:11,fontWeight:600}}>BÀI VIẾT CỦA BẠN</span>
+          <span style={{fontSize:10,color:wordCount>=minWords?"#00C896":"#F59E0B",fontWeight:600}}>{wordCount} / {minWords}+ words</span>
+        </div>
+        <textarea value={essay} onChange={e=>setEssay(e.target.value)} placeholder={`Viết bài ${task==="task1"?"Task 1 (tối thiểu 150 từ)":"Task 2 (tối thiểu 250 từ)"} vào đây...`} style={{width:"100%",background:"transparent",border:"none",outline:"none",color:"#fff",fontSize:13,lineHeight:1.7,resize:"none",fontFamily:"inherit",minHeight:160,boxSizing:"border-box"}}/>
+      </div>
+
+      <button onClick={submitWriting} disabled={!essay.trim()||loading} style={{width:"100%",background:essay.trim()&&!loading?`linear-gradient(135deg,${color},#EC4899)`:"rgba(255,255,255,0.06)",border:"none",color:essay.trim()&&!loading?"#fff":"#555",padding:"12px",borderRadius:10,cursor:essay.trim()&&!loading?"pointer":"default",fontWeight:700,fontSize:13,marginBottom:14}}>
         {loading?"⏳ Đang chấm bài...":"📊 Chấm bài theo tiêu chí IELTS"}
       </button>
 
@@ -393,7 +412,6 @@ function WritingModule({ color }) {
     </div>
   );
 }
-
 // ============================================================
 // VOCAB FLASHCARD MODULE
 // ============================================================
@@ -484,6 +502,7 @@ function VocabModule({ color }) {
     </div>
   );
 }
+
 // ============================================================
 // GRAMMAR QUIZ MODULE
 // ============================================================
@@ -563,7 +582,6 @@ function GrammarModule({ color }) {
     </div>
   );
 }
-
 // ============================================================
 // MAIN APP
 // ============================================================
@@ -611,7 +629,7 @@ export default function EduBotPro() {
       const v=voices.find(v=>v.lang==="vi-VN")||voices.find(v=>v.lang.startsWith("vi"));
       if(v) utter.voice=v;
     }
- utter.onstart=()=>setIsSpeaking(true);
+    utter.onstart=()=>setIsSpeaking(true);
     utter.onerror=()=>setIsSpeaking(false);
     const t=setInterval(()=>{if(synthRef.current?.paused)synthRef.current.resume();},4000);
     utter.onend=()=>{setIsSpeaking(false);clearInterval(t);};
@@ -712,7 +730,8 @@ export default function EduBotPro() {
         textarea{resize:none}
         input:focus,textarea:focus{outline:none}
       `}</style>
-  {/* HEADER */}
+
+      {/* HEADER */}
       <header style={{position:"sticky",top:0,zIndex:50,background:"rgba(10,10,15,0.92)",backdropFilter:"blur(20px)",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
         <div style={{maxWidth:860,margin:"0 auto",padding:"0 12px",display:"flex",alignItems:"center",gap:8,height:52}}>
           <button onClick={exitToHome} style={{display:"flex",alignItems:"center",gap:8,background:"none",border:"none",cursor:"pointer",padding:0}}>
@@ -814,7 +833,8 @@ export default function EduBotPro() {
               </div>
             );
           })}
- {!isSpecialModule&&loading&&(
+
+          {!isSpecialModule&&loading&&(
             <div className="mb" style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
               <div style={{width:26,height:26,borderRadius:7,background:isSpeakingMode?`linear-gradient(135deg,#F59E0B,#FF6B35)`:`linear-gradient(135deg,${activeColor},#7C3AED)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12}}>
                 {isSpeakingMode?"🎙️":"🧠"}
@@ -838,8 +858,7 @@ export default function EduBotPro() {
               </div>
             )}
             {micError&&<div style={{background:"rgba(255,80,80,0.08)",border:"1px solid rgba(255,80,80,0.18)",borderRadius:8,padding:"5px 10px",marginBottom:6,fontSize:11,color:"#ff8888"}}>{micError}</div>}
-
-            {isSpeakingMode?(
+   {isSpeakingMode?(
               <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
                 <div style={{display:"flex",alignItems:"center",gap:14}}>
                   {isSpeaking&&<div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3}}><Viz active={false} color="#F59E0B" speaking={true}/><span style={{fontSize:9,color:"#F59E0B"}}>Bot đang nói</span></div>}
