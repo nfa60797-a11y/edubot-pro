@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect, useCallback } from "react";
 
 // ============================================================
@@ -131,7 +130,6 @@ async function callClaude(system, messages, max_tokens=1000) {
   const d = await res.json();
   return d.content?.map(b=>b.text||"").join("") || "";
 }
-
 // ============================================================
 // CONSTANTS
 // ============================================================
@@ -323,7 +321,7 @@ function ListeningModule({ color }) {
           {phase==="answering"&&<button onClick={submit} style={{width:"100%",background:`linear-gradient(135deg,${color},#3B82F6)`,border:"none",color:"#fff",padding:"11px",borderRadius:10,cursor:"pointer",fontWeight:700,fontSize:13}}>✅ Nộp & Chấm điểm</button>}
         </div>
       )}
-{phase==="result"&&result&&(
+      {phase==="result"&&result&&(
         <div style={{background:"rgba(0,200,150,0.06)",border:"1px solid rgba(0,200,150,0.2)",borderRadius:12,padding:"14px"}}>
           <div style={{color:"#00C896",fontWeight:700,fontSize:12,marginBottom:8}}>📊 Kết quả</div>
           <div style={{color:"#ccc",fontSize:12,lineHeight:1.8}} dangerouslySetInnerHTML={{__html:renderMd(result)}}/>
@@ -355,8 +353,7 @@ function WritingModule({ color }) {
       "The table below gives information about the underground railway systems in six cities.",
     ],
   };
-
-  const randomPrompt = () => {
+const randomPrompt = () => {
     const arr = SAMPLE_PROMPTS[task];
     setPrompt(arr[Math.floor(Math.random()*arr.length)]);
   };
@@ -412,6 +409,7 @@ function WritingModule({ color }) {
     </div>
   );
 }
+
 // ============================================================
 // VOCAB FLASHCARD MODULE
 // ============================================================
@@ -433,7 +431,7 @@ function VocabModule({ color }) {
     setFlipped(false);
   };
 
-  const reset = () => { setKnown([]); setUnknown([]); setFlipped(false); };
+ const reset = () => { setKnown([]); setUnknown([]); setFlipped(false); };
 
   const changeTopic = (t) => { setTopic(t); setKnown([]); setUnknown([]); setFlipped(false); setCardIdx(0); };
 
@@ -572,8 +570,7 @@ function GrammarModule({ color }) {
         {loading&&<div style={{display:"flex",alignItems:"center",gap:7}}><div style={{width:24,height:24,borderRadius:7,background:`linear-gradient(135deg,${color},#7C3AED)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11}}>⚡</div><div style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"14px 14px 14px 3px",padding:"11px 15px",color}}><div className="dp"><span/><span/><span/></div></div></div>}
         <div ref={bottomRef}/>
       </div>
-
-      {messages.length>0&&(
+    {messages.length>0&&(
         <div style={{display:"flex",gap:7}}>
           <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")send();}} placeholder="Nhập câu trả lời (A/B/C/D hoặc điền từ)..." style={{flex:1,background:"rgba(255,255,255,0.05)",border:`1px solid ${input?color+"45":"rgba(255,255,255,0.07)"}`,borderRadius:10,padding:"9px 12px",color:"#fff",fontSize:13,outline:"none",fontFamily:"inherit",transition:"border-color .2s"}}/>
           <button onClick={send} disabled={!input.trim()||loading} style={{width:38,height:38,borderRadius:10,border:"none",cursor:"pointer",background:input.trim()&&!loading?`linear-gradient(135deg,${color},#7C3AED)`:"rgba(255,255,255,0.05)",color:input.trim()&&!loading?"#fff":"#444",fontSize:16}}>↑</button>
@@ -582,6 +579,7 @@ function GrammarModule({ color }) {
     </div>
   );
 }
+
 // ============================================================
 // MAIN APP
 // ============================================================
@@ -599,6 +597,7 @@ export default function EduBotPro() {
   const [voiceSupported] = useState(!!(window.SpeechRecognition||window.webkitSpeechRecognition)&&!!window.speechSynthesis);
   const [selectedTopic, setSelectedTopic] = useState(SPEAKING_TOPICS[0]);
   const [autoSpeak, setAutoSpeak] = useState(true);
+  const [accentMode, setAccentMode] = useState("us"); // "us" or "uk" 
   const [micError, setMicError] = useState("");
 
   const bottomRef = useRef(null);
@@ -612,29 +611,78 @@ export default function EduBotPro() {
 
   useEffect(()=>{bottomRef.current?.scrollIntoView({behavior:"smooth"});},[messages,loading]);
 
-  const speak = useCallback((text)=>{
+  const getVoices = useCallback(() => {
+    return new Promise(resolve => {
+      let v = synthRef.current.getVoices();
+      if (v.length > 0) { resolve(v); return; }
+      synthRef.current.onvoiceschanged = () => resolve(synthRef.current.getVoices());
+    });
+  }, []);
+
+  const speak = useCallback(async (text) => {
     if(!synthRef.current||!autoSpeak) return;
     synthRef.current.cancel();
-    const clean = stripMd(text).slice(0,600);
+    const clean = stripMd(text)
+      .replace(/https?:\/\/\S+/g,"")
+      .replace(/[•\-–—━═►▶·]/g," ")
+      .replace(/[\u{1F000}-\u{1FFFF}]/gu," ")
+      .replace(/#{1,3}\s*/g,"")
+      .replace(/\*{1,2}/g,"")
+      .replace(/_{1,2}/g,"")
+      .replace(/`/g,"")
+      .replace(/[|\[\]]/g,"")
+      .replace(/\(.*?\)/g,"")
+      .replace(/\s{2,}/g," ")
+      .trim().slice(0,600);
+    if(!clean) return;
+    const voices = await getVoices();
     const utter = new SpeechSynthesisUtterance(clean);
-    const voices = synthRef.current.getVoices();
-    if(isSpeakingMode){
-      utter.lang="en-US"; utter.rate=0.85; utter.pitch=1.0;
-      const preferred=["Google US English","Samantha","Alex","Karen","Google UK English Female","Daniel"];
-      let best=null; for(const n of preferred){best=voices.find(v=>v.name.includes(n));if(best)break;}
-      if(!best) best=voices.find(v=>v.lang==="en-US")||voices.find(v=>v.lang.startsWith("en"));
+    // English voice — used in speaking mode AND when bot reads English content
+    const useEnglish = isSpeakingMode;
+    if(useEnglish){
+      let best=null;
+      if(accentMode==="uk"){
+        const ukPriority=["Google UK English Female","Google UK English Male","Daniel","Kate","Serena","Microsoft Hazel","Microsoft Susan"];
+        for(const n of ukPriority){best=voices.find(v=>v.name===n||v.name.includes(n));if(best)break;}
+        if(!best) best=voices.find(v=>v.lang==="en-GB");
+      } else {
+        const usPriority=["Google US English","Samantha","Alex","Karen","Microsoft Zira","Microsoft David","Microsoft Mark"];
+        for(const n of usPriority){best=voices.find(v=>v.name===n||v.name.includes(n));if(best)break;}
+        if(!best) best=voices.find(v=>v.lang==="en-US");
+      }
+      if(!best) best=voices.find(v=>v.lang.startsWith("en"));
       if(best) utter.voice=best;
+      utter.lang=accentMode==="uk"?"en-GB":"en-US";
+      utter.rate=0.82; utter.pitch=accentMode==="uk"?1.0:1.05; utter.volume=1.0;
     } else {
-      utter.lang="vi-VN"; utter.rate=0.88; utter.pitch=1.0;
-      const v=voices.find(v=>v.lang==="vi-VN")||voices.find(v=>v.lang.startsWith("vi"));
-      if(v) utter.voice=v;
+      // Vietnamese — detect if text has English sentences and switch accent
+      const hasEnglish = (clean.match(/[a-zA-Z]{3,}/g)||[]).length > 5;
+      if(hasEnglish){
+        // Mixed content — use slower rate for clarity
+        let best=null;
+        if(accentMode==="uk"){
+          best=voices.find(v=>v.lang==="en-GB")||voices.find(v=>v.lang.startsWith("en"));
+        } else {
+          best=voices.find(v=>v.name==="Google US English")||voices.find(v=>v.lang==="en-US")||voices.find(v=>v.lang.startsWith("en"));
+        }
+        if(best) utter.voice=best;
+        utter.lang=accentMode==="uk"?"en-GB":"en-US";
+        utter.rate=0.78; utter.pitch=1.0; utter.volume=1.0;
+      } else {
+        const viPriority=["Google tiếng Việt","Google Vietnamese"];
+        let best=null;
+        for(const n of viPriority){best=voices.find(v=>v.name.includes(n));if(best)break;}
+        if(!best) best=voices.find(v=>v.lang==="vi-VN");
+        if(best) utter.voice=best;
+        utter.lang="vi-VN"; utter.rate=0.85; utter.pitch=1.0; utter.volume=1.0;
+      }
     }
     utter.onstart=()=>setIsSpeaking(true);
     utter.onerror=()=>setIsSpeaking(false);
-    const t=setInterval(()=>{if(synthRef.current?.paused)synthRef.current.resume();},4000);
+    const t=setInterval(()=>{if(synthRef.current?.speaking&&synthRef.current?.paused)synthRef.current.resume();},3000);
     utter.onend=()=>{setIsSpeaking(false);clearInterval(t);};
     synthRef.current.speak(utter);
-  },[autoSpeak,isSpeakingMode]);
+  },[autoSpeak,isSpeakingMode,getVoices,accentMode]);
 
   const stopSpeaking=()=>{synthRef.current?.cancel();setIsSpeaking(false);};
 
@@ -730,9 +778,7 @@ export default function EduBotPro() {
         textarea{resize:none}
         input:focus,textarea:focus{outline:none}
       `}</style>
-
-      {/* HEADER */}
-      <header style={{position:"sticky",top:0,zIndex:50,background:"rgba(10,10,15,0.92)",backdropFilter:"blur(20px)",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
+  <header style={{position:"sticky",top:0,zIndex:50,background:"rgba(10,10,15,0.92)",backdropFilter:"blur(20px)",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
         <div style={{maxWidth:860,margin:"0 auto",padding:"0 12px",display:"flex",alignItems:"center",gap:8,height:52}}>
           <button onClick={exitToHome} style={{display:"flex",alignItems:"center",gap:8,background:"none",border:"none",cursor:"pointer",padding:0}}>
             <div style={{width:30,height:30,borderRadius:8,background:`linear-gradient(135deg,${activeColor},#7C3AED)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,transition:"background .5s"}}>🧠</div>
@@ -751,6 +797,11 @@ export default function EduBotPro() {
             ))}
           </div>
 
+          {/* Accent toggle — always visible */}
+          <div style={{display:"flex",background:"rgba(255,255,255,0.06)",borderRadius:7,padding:2,gap:2,flexShrink:0}}>
+            <button onClick={()=>setAccentMode("us")} style={{padding:"4px 8px",borderRadius:5,border:"none",cursor:"pointer",background:accentMode==="us"?"#3B82F6":"transparent",color:accentMode==="us"?"#fff":"#555",fontSize:10,fontWeight:700,transition:"all .15s"}}>🇺🇸</button>
+            <button onClick={()=>setAccentMode("uk")} style={{padding:"4px 8px",borderRadius:5,border:"none",cursor:"pointer",background:accentMode==="uk"?"#EC4899":"transparent",color:accentMode==="uk"?"#fff":"#555",fontSize:10,fontWeight:700,transition:"all .15s"}}>🇬🇧</button>
+          </div>
           <button onClick={exitToHome} style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.07)",color:"#555",padding:"5px 9px",borderRadius:8,cursor:"pointer",fontSize:11,flexShrink:0}}>⌂</button>
         </div>
 
@@ -761,11 +812,17 @@ export default function EduBotPro() {
               <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
                 {SPEAKING_TOPICS.map(t=><button key={t} onClick={()=>setSelectedTopic(t)} style={{padding:"3px 8px",borderRadius:12,border:`1px solid ${selectedTopic===t?"#F59E0B":"rgba(255,255,255,0.07)"}`,background:selectedTopic===t?"#F59E0B22":"transparent",color:selectedTopic===t?"#F59E0B":"#666",fontSize:9,cursor:"pointer"}}>{t}</button>)}
               </div>
-              <label style={{display:"flex",alignItems:"center",gap:5,cursor:"pointer",fontSize:10,color:"#777"}}>
-                <input type="checkbox" checked={autoSpeak} onChange={e=>setAutoSpeak(e.target.checked)} style={{accentColor:"#F59E0B"}}/>
-                Bot tự nói
-                {isSpeaking&&<button onClick={stopSpeaking} style={{background:"rgba(255,80,80,0.15)",border:"1px solid rgba(255,80,80,0.2)",color:"#ff8888",padding:"2px 6px",borderRadius:5,cursor:"pointer",fontSize:9,marginLeft:3}}>⏹</button>}
-              </label>
+              <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+                <label style={{display:"flex",alignItems:"center",gap:5,cursor:"pointer",fontSize:10,color:"#777"}}>
+                  <input type="checkbox" checked={autoSpeak} onChange={e=>setAutoSpeak(e.target.checked)} style={{accentColor:"#F59E0B"}}/>
+                  Bot tự nói
+                </label>
+                <div style={{display:"flex",background:"rgba(255,255,255,0.06)",borderRadius:6,padding:2,gap:2}}>
+                  <button onClick={()=>setAccentMode("us")} style={{padding:"2px 8px",borderRadius:5,border:"none",cursor:"pointer",background:accentMode==="us"?"#3B82F6":"transparent",color:accentMode==="us"?"#fff":"#666",fontSize:10,fontWeight:600}}>🇺🇸 US</button>
+                  <button onClick={()=>setAccentMode("uk")} style={{padding:"2px 8px",borderRadius:5,border:"none",cursor:"pointer",background:accentMode==="uk"?"#EC4899":"transparent",color:accentMode==="uk"?"#fff":"#666",fontSize:10,fontWeight:600}}>🇬🇧 UK</button>
+                </div>
+                {isSpeaking&&<button onClick={stopSpeaking} style={{background:"rgba(255,80,80,0.15)",border:"1px solid rgba(255,80,80,0.2)",color:"#ff8888",padding:"2px 6px",borderRadius:5,cursor:"pointer",fontSize:9}}>⏹</button>}
+              </div>
             </div>
           </div>
         )}
@@ -780,8 +837,7 @@ export default function EduBotPro() {
           {activeModule==="writing"&&<WritingModule color={activeColor}/>}
           {activeModule==="vocab"&&<VocabModule color={activeColor}/>}
           {activeModule==="grammar"&&<GrammarModule color={activeColor}/>}
-
-          {/* WELCOME */}
+  {/* WELCOME */}
           {showWelcome&&!isSpecialModule&&(
             <div style={{animation:"su .5s cubic-bezier(.16,1,.3,1) both"}}>
               <div style={{textAlign:"center",padding:"28px 12px 20px"}}>
@@ -846,8 +902,7 @@ export default function EduBotPro() {
           )}
           <div ref={bottomRef}/>
         </div>
-      </div>
-
+ 
       {/* INPUT BAR */}
       {!isSpecialModule&&(
         <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:50,background:"rgba(10,10,15,0.94)",backdropFilter:"blur(24px)",borderTop:"1px solid rgba(255,255,255,0.05)",padding:"9px 12px 12px"}}>
@@ -858,7 +913,8 @@ export default function EduBotPro() {
               </div>
             )}
             {micError&&<div style={{background:"rgba(255,80,80,0.08)",border:"1px solid rgba(255,80,80,0.18)",borderRadius:8,padding:"5px 10px",marginBottom:6,fontSize:11,color:"#ff8888"}}>{micError}</div>}
-   {isSpeakingMode?(
+
+            {isSpeakingMode?(
               <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
                 <div style={{display:"flex",alignItems:"center",gap:14}}>
                   {isSpeaking&&<div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3}}><Viz active={false} color="#F59E0B" speaking={true}/><span style={{fontSize:9,color:"#F59E0B"}}>Bot đang nói</span></div>}
@@ -892,4 +948,4 @@ export default function EduBotPro() {
       )}
     </div>
   );
-}
+}     </div>
